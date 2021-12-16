@@ -5,15 +5,15 @@ import '../models/transaction.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactionList;
+  final Function removeTx;
 
-  TransactionList(this.transactionList);
+  TransactionList(this.transactionList, this.removeTx);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      child: transactionList.isEmpty
-          ? Column(
+    return transactionList.isEmpty
+        ? LayoutBuilder(builder: (ctx, constrian) {
+            return Column(
               children: [
                 Text(
                   'No transactions add yet !',
@@ -23,26 +23,28 @@ class TransactionList extends StatelessWidget {
                   height: 20,
                 ),
                 Container(
-                  height: 200,
+                  height: constrian.maxHeight * 0.6,
                   child: Image.asset(
                     'assets/images/waiting.png',
                     fit: BoxFit.cover,
                   ),
                 )
               ],
-            )
-          : ListView.builder(
-              itemBuilder: (ctx, index) {
-                return Card(
-                  elevation: 2,
-                  margin: EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                  child: ListTile(
+            );
+          })
+        : ListView.builder(
+            itemBuilder: (ctx, index) {
+              return Card(
+                elevation: 2,
+                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                child: ListTile(
                     leading: CircleAvatar(
                       child: FittedBox(
                           child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Text('\$${transactionList[index].amount}'),
-                          )),
+                        padding: const EdgeInsets.all(4),
+                        child: Text(
+                            '\$${transactionList[index].amount.toStringAsFixed(2)}'),
+                      )),
                       radius: 30,
                     ),
                     title: Text(
@@ -51,11 +53,24 @@ class TransactionList extends StatelessWidget {
                     ),
                     subtitle: Text(
                         DateFormat.yMMMd().format(transactionList[index].date)),
-                  ),
-                );
-              },
-              itemCount: transactionList.length,
-            ),
-    );
+                    trailing: MediaQuery.of(context).size.width > 360
+                        ? TextButton.icon(
+                            icon: Icon(Icons.delete),
+                            label: Text('Delete'),
+                            style: TextButton.styleFrom(
+                                primary: Theme.of(context).errorColor),
+                            onPressed: () =>
+                                removeTx(transactionList[index].id),
+                          )
+                        : IconButton(
+                            color: Theme.of(context).errorColor,
+                            icon: Icon(Icons.delete),
+                            onPressed: () =>
+                                removeTx(transactionList[index].id),
+                          )),
+              );
+            },
+            itemCount: transactionList.length,
+          );
   }
 }
